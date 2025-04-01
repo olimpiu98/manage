@@ -182,13 +182,15 @@ export default function PartiesPage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between">
+        <div>
       <button
           className={`flex items-center gap-2 px-4 py-2 bg-[#0a0a12]/50 hover:bg-[#0a0a12]/70 rounded`}
         >
-          <span>{parties.length} Parties ({totalAssignedMembers} members)</span>
-        </button>
-        <AuthButton isAuthenticated={isAuthenticated} onAuthSuccess={handleAuthSuccess} />
+          {parties.length} Parties ({totalAssignedMembers} members)
+        </button></div>
+        <div>
+        <AuthButton isAuthenticated={isAuthenticated} onAuthSuccess={handleAuthSuccess} /></div>
       </div>
 
       <div className="flex" style={{ minHeight: "calc(100vh - 300px)" }}>

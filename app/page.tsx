@@ -26,7 +26,7 @@ export default function Home() {
               <Users className="h-16 w-16" />
             </div>
             <h3 className="text-xl font-bold mb-2">Party Management</h3>
-            <p>Organize your raid parties with our drag-and-drop interface</p>
+            <p>Organize parties with interface</p>
           </div>
         </Link>
 

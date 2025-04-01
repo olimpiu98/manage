@@ -78,6 +78,7 @@ export const Sidebar = React.memo(function Sidebar({
   const availableMembers = members.filter((m) => m.partyId === null).length
 
   return (
+    <div className="sidebar1">
     <div className="sidebar">
       <h2 className="sidebar-title">Available Members</h2>
       <p className="text-sm opacity-70 mb-4">Drag members to assign them to parties</p>
@@ -271,7 +272,7 @@ export const Sidebar = React.memo(function Sidebar({
           </div>
         </div>
       )}
-    </div>
+    </div></div>
   )
 })
 
