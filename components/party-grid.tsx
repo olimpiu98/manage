@@ -88,16 +88,16 @@ export function PartyGrid({
           />
         ))}
 
-        <div className="party-card flex items-center justify-center" style={{ minHeight: "200px" }}>
+        {isAuthenticated && <div className="party-card flex items-center justify-center" style={{ minHeight: "200px" }}>
           <button
             className="button flex flex-col items-center justify-center h-full w-full gap-2"
             onClick={handleAddParty}
           >
             <Plus className="h-6 w-6" />
-            <span>Create Party</span>
-            {!isAuthenticated && <Lock className="h-4 w-4" />}
-          </button>
-        </div>
+            <span>Create Party</span>     
+            </button>
+          </div>
+        }
       </div>
     </div>
   )
