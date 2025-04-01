@@ -3,6 +3,7 @@
 import { Plus, Lock, MoveVertical } from "lucide-react"
 import { PartyCard } from "./party-card"
 import type { Member, Party } from "@/lib/types"
+import { useState } from "react"
 
 interface PartyGridProps {
   parties: Party[]
@@ -29,6 +30,9 @@ export function PartyGrid({
   isAuthenticated,
   requireAuth,
 }: PartyGridProps) {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filterRole, setFilterRole] = useState<"all" | "tank" | "healer" | "dps">("all")
+
   const handleAddParty = () => {
     if (!isAuthenticated) {
       requireAuth()
@@ -42,9 +46,11 @@ export function PartyGrid({
     return members.filter((member) => member.partyId === partyId)
   }
 
+  const filteredParties = parties
+
   return (
     <div className="main-content">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="title">
             {parties.length} Parties ({totalMembers} members)
@@ -56,10 +62,19 @@ export function PartyGrid({
             </div>
           )}
         </div>
+
+        <div className="flex gap-3">
+          {isAuthenticated && (
+            <button className="button flex items-center justify-center gap-2" onClick={handleAddParty}>
+              <Plus className="h-4 w-4" />
+              <span>Add Party</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="party-grid">
-        {parties.map((party) => (
+        {filteredParties.map((party) => (
           <PartyCard
             key={party.id}
             party={party}

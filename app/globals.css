@@ -670,6 +670,14 @@ footer {
   line-height: 1.6;
 }
 
+.card {
+  background-color: rgba(10, 10, 18, 0.8);
+  border: 1px solid rgba(232, 214, 179, 0.2);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
 /* Media Queries */
 @media (max-width: 1400px) {
   .side-border-left {

@@ -1,0 +1,57 @@
+How to Update Firebase Security Rules:
+
+1. Go to the Firebase Console: https://console.firebase.google.com/
+2. Select your project
+3. In the left sidebar, click on "Firestore Database"
+4. Click on the "Rules" tab at the top
+5. Replace ALL the existing rules with the following:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read and write access to all documents for all users
+    // IMPORTANT: This is a temporary solution for debugging
+    // You should restrict this once the app is working
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+6. Click the "Publish" button to save the changes
+7. Wait a few moments for the rules to propagate (usually takes less than a minute)
+8. Test your application again - the error should be resolved
+
+IMPORTANT: Once your application is working correctly, you should update the rules to be more secure:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read access to all documents for all users
+    match /{document=**} {
+      allow read: if true;
+    }
+    
+    // Only allow write access to authenticated users
+    match /parties/{partyId} {
+      allow write: if request.auth != null;
+    }
+    
+    match /members/{memberId} {
+      allow write: if request.auth != null;
+    }
+    
+    match /events/{eventId} {
+      allow write: if request.auth != null;
+    }
+  }
+}
+
+These rules will:
+- Allow anyone to read data (view parties, members, events)
+- Only allow authenticated users to write data (create, update, delete)
+
+This is a good balance between security and functionality for your app.
+If you need more granular control, you can further restrict write operations
+based on user roles or document ownership.
+

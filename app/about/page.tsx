@@ -5,8 +5,8 @@ export default function AboutPage() {
         <h1 className="title">About Anatolion Guild</h1>
 
         <p className="text">
-          Anatolion Guild was formed by a group of friends who shared a passion for MMORPGs and a vision to
-          create a community that values both competitive excellence and supportive camaraderie.
+          Anatolion Guild was formed by a group of friends who shared a passion for MMORPGs and a vision to create a
+          community that values both competitive excellence and supportive camaraderie.
         </p>
 
         <p className="text">

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Shield, Sword, Heart, Lock, UserPlus } from "lucide-react"
+import React, { useState } from "react"
+import { Shield, Sword, Heart, Lock, UserPlus, Filter } from "lucide-react"
 import { DraggableMember } from "./draggable-member"
 import type { Member, Role } from "@/lib/types"
 
@@ -13,12 +13,19 @@ interface SidebarProps {
   requireAuth: () => void
 }
 
-export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated, requireAuth }: SidebarProps) {
+export const Sidebar = React.memo(function Sidebar({
+  members,
+  onAddMember,
+  onRemoveMember,
+  isAuthenticated,
+  requireAuth,
+}: SidebarProps) {
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [newMemberName, setNewMemberName] = useState("")
   const [newMemberRole, setNewMemberRole] = useState<Role>("tank")
   const [isAddingMember, setIsAddingMember] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const [filterRole, setFilterRole] = useState<"all" | "tank" | "healer" | "dps">("all")
 
   const handleAddMember = async () => {
     if (newMemberName.trim()) {
@@ -49,28 +56,65 @@ export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated,
     }
   }
 
+  // Filter members by role
+  const filterMembers = (members: Member[]) => {
+    return members.filter((member) => {
+      const matchesRole = filterRole === "all" || member.role === filterRole
+      return matchesRole
+    })
+  }
+
   // Filter members by role and unassigned
-  const tankMembers = members.filter((m) => m.role === "tank" && m.partyId === null)
-  const dpsMembers = members.filter((m) => m.role === "dps" && m.partyId === null)
-  const healerMembers = members.filter((m) => m.role === "healer" && m.partyId === null)
+  const tankMembers = filterMembers(members.filter((m) => m.role === "tank" && m.partyId === null))
+  const dpsMembers = filterMembers(members.filter((m) => m.role === "dps" && m.partyId === null))
+  const healerMembers = filterMembers(members.filter((m) => m.role === "healer" && m.partyId === null))
 
   // Count total members by role
   const totalTanks = members.filter((m) => m.role === "tank").length
   const totalDps = members.filter((m) => m.role === "dps").length
   const totalHealers = members.filter((m) => m.role === "healer").length
 
+  // Count available members
+  const availableMembers = members.filter((m) => m.partyId === null).length
+
   return (
     <div className="sidebar">
       <h2 className="sidebar-title">Available Members</h2>
       <p className="text-sm opacity-70 mb-4">Drag members to assign them to parties</p>
 
+      <div className="mb-4">
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#e8deb3]/50" />
+          <select
+            className="form-select pl-10 pr-4 py-2 appearance-none w-full"
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value as any)}
+          >
+            <option value="all">All Roles</option>
+            <option value="tank">Tanks</option>
+            <option value="healer">Healers</option>
+            <option value="dps">DPS</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-3">
+        <span className="text-sm font-medium">Available: {availableMembers}</span>
+        <button
+          className="text-xs px-3 py-1 bg-[#e8deb3]/10 hover:bg-[#e8deb3]/20 rounded"
+          onClick={() => setFilterRole("all")}
+        >
+          Clear Filter
+        </button>
+      </div>
+
       {/* Tanks Section */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">
+        <div className="sidebar-section-title flex items-center">
           <div className="w-5 h-5 rounded-full bg-purple-700 flex items-center justify-center">
             <Shield className="h-3 w-3 text-white" />
           </div>
-          <span>Tanks</span>
+          <span className="ml-2">Tanks</span>
           <span className="text-sm opacity-70 ml-auto">{`${totalTanks - tankMembers.length}/${totalTanks}`}</span>
         </div>
         <div>
@@ -84,18 +128,20 @@ export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated,
               />
             ))
           ) : (
-            <div className="text-sm opacity-70 text-center py-2">No tanks available</div>
+            <div className="text-sm opacity-70 text-center py-2">
+              {filterRole !== "all" && filterRole !== "tank" ? "No matching tanks" : "No tanks available"}
+            </div>
           )}
         </div>
       </div>
 
       {/* DPS Section */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">
+        <div className="sidebar-section-title flex items-center">
           <div className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center">
             <Sword className="h-3 w-3 text-white" />
           </div>
-          <span>DPS</span>
+          <span className="ml-2">DPS</span>
           <span className="text-sm opacity-70 ml-auto">{`${totalDps - dpsMembers.length}/${totalDps}`}</span>
         </div>
         <div>
@@ -109,18 +155,20 @@ export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated,
               />
             ))
           ) : (
-            <div className="text-sm opacity-70 text-center py-2">No DPS available</div>
+            <div className="text-sm opacity-70 text-center py-2">
+              {filterRole !== "all" && filterRole !== "dps" ? "No matching DPS" : "No DPS available"}
+            </div>
           )}
         </div>
       </div>
 
       {/* Healers Section */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">
+        <div className="sidebar-section-title flex items-center">
           <div className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center">
             <Heart className="h-3 w-3 text-white" />
           </div>
-          <span>Healers</span>
+          <span className="ml-2">Healers</span>
           <span className="text-sm opacity-70 ml-auto">{`${totalHealers - healerMembers.length}/${totalHealers}`}</span>
         </div>
         <div>
@@ -134,7 +182,9 @@ export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated,
               />
             ))
           ) : (
-            <div className="text-sm opacity-70 text-center py-2">No healers available</div>
+            <div className="text-sm opacity-70 text-center py-2">
+              {filterRole !== "all" && filterRole !== "healer" ? "No matching healers" : "No healers available"}
+            </div>
           )}
         </div>
       </div>
@@ -223,5 +273,5 @@ export function Sidebar({ members, onAddMember, onRemoveMember, isAuthenticated,
       )}
     </div>
   )
-}
+})
 

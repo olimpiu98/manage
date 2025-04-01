@@ -3,49 +3,55 @@
 import type React from "react"
 
 import { useState } from "react"
-import Link from "next/link"
+import { Shield, Sword, Heart } from "lucide-react"
 import { addMember } from "@/lib/firebase-service"
 import type { Role } from "@/lib/types"
-import { Shield, Sword, Heart } from "lucide-react"
+import Link from "next/link"
 
 export default function RegisterPage() {
   const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
+  const [pin, setPin] = useState("")
   const [role, setRole] = useState<Role | "">("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
 
-  // Store registered emails in localStorage to prevent duplicates
-  const registeredEmails =
-    typeof window !== "undefined" ? JSON.parse(localStorage.getItem("registeredEmails") || "[]") : []
+  // Store registered names in localStorage to prevent duplicates
+  const registeredNames =
+    typeof window !== "undefined" ? JSON.parse(localStorage.getItem("registeredNames") || "[]") : []
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!name || !email || !role) {
+    if (!name || !pin || !role) {
       setError("Please fill in all fields")
       return
     }
 
-    // Check if email is already registered
-    if (registeredEmails.includes(email)) {
-      setError("This email is already registered")
+    // Check if name is already registered
+    if (registeredNames.includes(name)) {
+      setError("This name is already registered")
+      return
+    }
+
+    // Simple PIN validation - must be 4 digits
+    if (!/^\d{4}$/.test(pin)) {
+      setError("PIN must be 4 digits")
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      const result = await addMember(name, role as Role)
+      const result = await addMember(name, role as Role, pin)
 
       if (result.success) {
-        // Store email in localStorage
-        localStorage.setItem("registeredEmails", JSON.stringify([...registeredEmails, email]))
+        // Store name in localStorage
+        localStorage.setItem("registeredNames", JSON.stringify([...registeredNames, name]))
         setSuccess(true)
         setName("")
-        setEmail("")
+        setPin("")
         setRole("")
       } else {
         setError(result.message || "Failed to register. Please try again.")
@@ -64,7 +70,7 @@ export default function RegisterPage() {
 
         {success ? (
           <div>
-            <p className="text">Thank you for registering! Your application has been submitted.</p>
+            <p className="text">Thank you for registering! Your character has been added.</p>
             <div className="mt-4">
               <Link href="/parties" className="button">
                 View Parties
@@ -88,17 +94,20 @@ export default function RegisterPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email" className="form-label">
-                Email Address
+              <label htmlFor="pin" className="form-label">
+                PIN (4 digits)
               </label>
               <input
-                type="email"
-                id="email"
+                type="password"
+                id="pin"
                 className="form-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                maxLength={4}
+                pattern="\d{4}"
                 required
               />
+              <p className="text-sm opacity-70 mt-1">Create a 4-digit PIN to manage your character later</p>
             </div>
 
             <div className="form-group">
@@ -134,7 +143,7 @@ export default function RegisterPage() {
             {error && <p style={{ color: "#f87171", marginBottom: "16px" }}>{error}</p>}
 
             <button type="submit" className="button" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Register"}
+              {isSubmitting ? "Registering..." : "Register Character"}
             </button>
           </form>
         )}

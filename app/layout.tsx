@@ -53,7 +53,7 @@ export default function RootLayout({
                     <Link href="/parties">Parties</Link>
                   </li>
                   <li>
-                    <Link href="/register">Register</Link>
+                    <Link href="/events">Events</Link>
                   </li>
                 </ul>
               </nav>
@@ -80,7 +80,7 @@ export default function RootLayout({
                 <Link href="/">Home</Link>
                 <Link href="/about">About</Link>
                 <Link href="/parties">Parties</Link>
-                <Link href="/register">Register</Link>
+                <Link href="/events">Events</Link>
               </div>
 
               <div className="platform-icons">

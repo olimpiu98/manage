@@ -20,6 +20,7 @@ import type { Member, Party, Role } from "@/lib/types"
 import { PartyGrid } from "@/components/party-grid"
 import { Sidebar } from "@/components/sidebar"
 import { AuthDialog } from "@/components/auth-dialog"
+import { AuthButton } from "@/components/auth-button"
 
 export default function PartiesPage() {
   const [parties, setParties] = useState<Party[]>([])
@@ -203,13 +204,9 @@ export default function PartiesPage() {
         />
       </div>
 
-      {!isAuthenticated && (
-        <div className="text-center mt-4">
-          <button className="button" onClick={() => setIsAuthDialogOpen(true)}>
-            Login as Admin
-          </button>
-        </div>
-      )}
+      <div className="text-center mt-4">
+        <AuthButton isAuthenticated={isAuthenticated} onAuthSuccess={handleAuthSuccess} />
+      </div>
 
       <AuthDialog
         isOpen={isAuthDialogOpen}

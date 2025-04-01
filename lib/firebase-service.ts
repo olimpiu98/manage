@@ -164,10 +164,11 @@ export async function reorderParties(draggedPartyId: string, targetOrder: number
   await batch.commit()
 }
 
-// Add a new member with unique name check
+// Add a new member with unique name check and PIN
 export async function addMember(
   name: string,
   role: Role,
+  pin?: string,
 ): Promise<{ success: boolean; message?: string; id?: string }> {
   // Check if a member with this name already exists
   const membersQuery = query(membersCollection, where("name", "==", name))
@@ -181,11 +182,19 @@ export async function addMember(
   }
 
   // If name is unique, add the member
-  const docRef = await addDoc(membersCollection, {
+  const memberData: any = {
     name,
     role,
     partyId: null,
-  })
+    createdAt: new Date().toISOString(),
+  }
+
+  // Add PIN if provided
+  if (pin) {
+    memberData.pin = pin
+  }
+
+  const docRef = await addDoc(membersCollection, memberData)
 
   return {
     success: true,
@@ -279,5 +288,12 @@ export async function initializeDefaultData(): Promise<void> {
       partyId: null,
     })
   }
+}
+
+// Verify member PIN
+export async function verifyMemberPin(name: string, pin: string): Promise<boolean> {
+  const membersQuery = query(membersCollection, where("name", "==", name), where("pin", "==", pin))
+  const snapshot = await getDocs(membersQuery)
+  return !snapshot.empty
 }
 

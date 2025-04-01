@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { DndProvider } from "react-dnd"
 import { HTML5Backend } from "react-dnd-html5-backend"
 import { Sidebar } from "./sidebar"
@@ -74,25 +74,28 @@ export default function PartyManagementSystem() {
   }, [])
 
   // Authentication check
-  const requireAuth = (action: () => void) => {
-    if (isAuthenticated) {
-      action()
-    } else {
-      setPendingAction(() => action)
-      setIsAuthDialogOpen(true)
-    }
-  }
+  const requireAuth = useCallback(
+    (action: () => void) => {
+      if (isAuthenticated) {
+        action()
+      } else {
+        setPendingAction(() => action)
+        setIsAuthDialogOpen(true)
+      }
+    },
+    [isAuthenticated],
+  )
 
   // Handle authentication success
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = useCallback(() => {
     if (pendingAction) {
       pendingAction()
       setPendingAction(null)
     }
-  }
+  }, [pendingAction])
 
   // Party management functions
-  const handleAddParty = () => {
+  const handleAddParty = useCallback(() => {
     requireAuth(async () => {
       try {
         const newPartyName = `Party ${parties.length + 1}`
@@ -111,151 +114,169 @@ export default function PartyManagementSystem() {
         })
       }
     })
-  }
+  }, [parties.length, requireAuth])
 
-  const handleRemoveParty = (partyId: string) => {
-    requireAuth(async () => {
-      try {
-        // Move members from this party back to unassigned
-        const membersInParty = members.filter((member) => member.partyId === partyId)
-
-        for (const member of membersInParty) {
-          await moveMemberToParty(member.id, null)
-        }
-
-        // Delete the party
-        await deleteParty(partyId)
-
-        toast({
-          title: "Success",
-          description: "Party removed successfully",
-        })
-      } catch (error) {
-        console.error("Error removing party:", error)
-        toast({
-          title: "Error",
-          description: "Failed to remove party",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
-  const handleRenameParty = (partyId: string, newName: string) => {
-    requireAuth(async () => {
-      try {
-        await updateParty(partyId, { name: newName })
-
-        toast({
-          title: "Success",
-          description: "Party renamed successfully",
-        })
-      } catch (error) {
-        console.error("Error renaming party:", error)
-        toast({
-          title: "Error",
-          description: "Failed to rename party",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
-  const handleMoveParty = (partyId: string, newOrder: number) => {
-    requireAuth(async () => {
-      try {
-        await reorderParties(partyId, newOrder)
-
-        toast({
-          title: "Success",
-          description: "Parties swapped successfully",
-        })
-      } catch (error) {
-        console.error("Error swapping parties:", error)
-        toast({
-          title: "Error",
-          description: "Failed to swap parties",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
-  // Member management functions
-  const handleAddMember = async (name: string, role: Role): Promise<boolean> => {
-    return new Promise((resolve) => {
+  const handleRemoveParty = useCallback(
+    (partyId: string) => {
       requireAuth(async () => {
         try {
-          const result = await addMember(name, role)
+          // Move members from this party back to unassigned
+          const membersInParty = members.filter((member) => member.partyId === partyId)
 
-          if (result.success) {
-            toast({
-              title: "Success",
-              description: "Member added successfully",
-            })
-            resolve(true)
-          } else {
+          for (const member of membersInParty) {
+            await moveMemberToParty(member.id, null)
+          }
+
+          // Delete the party
+          await deleteParty(partyId)
+
+          toast({
+            title: "Success",
+            description: "Party removed successfully",
+          })
+        } catch (error) {
+          console.error("Error removing party:", error)
+          toast({
+            title: "Error",
+            description: "Failed to remove party",
+            variant: "destructive",
+          })
+        }
+      })
+    },
+    [members, requireAuth],
+  )
+
+  const handleRenameParty = useCallback(
+    (partyId: string, newName: string) => {
+      requireAuth(async () => {
+        try {
+          await updateParty(partyId, { name: newName })
+
+          toast({
+            title: "Success",
+            description: "Party renamed successfully",
+          })
+        } catch (error) {
+          console.error("Error renaming party:", error)
+          toast({
+            title: "Error",
+            description: "Failed to rename party",
+            variant: "destructive",
+          })
+        }
+      })
+    },
+    [requireAuth],
+  )
+
+  const handleMoveParty = useCallback(
+    (partyId: string, newOrder: number) => {
+      requireAuth(async () => {
+        try {
+          await reorderParties(partyId, newOrder)
+
+          toast({
+            title: "Success",
+            description: "Parties swapped successfully",
+          })
+        } catch (error) {
+          console.error("Error swapping parties:", error)
+          toast({
+            title: "Error",
+            description: "Failed to swap parties",
+            variant: "destructive",
+          })
+        }
+      })
+    },
+    [requireAuth],
+  )
+
+  // Member management functions
+  const handleAddMember = useCallback(
+    async (name: string, role: Role): Promise<boolean> => {
+      return new Promise((resolve) => {
+        requireAuth(async () => {
+          try {
+            const result = await addMember(name, role)
+
+            if (result.success) {
+              toast({
+                title: "Success",
+                description: "Member added successfully",
+              })
+              resolve(true)
+            } else {
+              toast({
+                title: "Error",
+                description: result.message || "Failed to add member",
+                variant: "destructive",
+              })
+              resolve(false)
+            }
+          } catch (error) {
+            console.error("Error adding member:", error)
             toast({
               title: "Error",
-              description: result.message || "Failed to add member",
+              description: "Failed to add member",
               variant: "destructive",
             })
             resolve(false)
           }
+        })
+      })
+    },
+    [requireAuth],
+  )
+
+  const handleRemoveMember = useCallback(
+    (memberId: string) => {
+      requireAuth(async () => {
+        try {
+          await deleteMember(memberId)
+
+          toast({
+            title: "Success",
+            description: "Member removed successfully",
+          })
         } catch (error) {
-          console.error("Error adding member:", error)
+          console.error("Error removing member:", error)
           toast({
             title: "Error",
-            description: "Failed to add member",
+            description: "Failed to remove member",
             variant: "destructive",
           })
-          resolve(false)
         }
       })
-    })
-  }
+    },
+    [requireAuth],
+  )
 
-  const handleRemoveMember = (memberId: string) => {
-    requireAuth(async () => {
-      try {
-        await deleteMember(memberId)
+  const handleMoveMember = useCallback(
+    (memberId: string, targetPartyId: string | null) => {
+      requireAuth(async () => {
+        try {
+          await moveMemberToParty(memberId, targetPartyId)
 
-        toast({
-          title: "Success",
-          description: "Member removed successfully",
-        })
-      } catch (error) {
-        console.error("Error removing member:", error)
-        toast({
-          title: "Error",
-          description: "Failed to remove member",
-          variant: "destructive",
-        })
-      }
-    })
-  }
+          toast({
+            title: "Success",
+            description: "Member moved successfully",
+          })
+        } catch (error) {
+          console.error("Error moving member:", error)
+          toast({
+            title: "Error",
+            description: "Failed to move member",
+            variant: "destructive",
+          })
+        }
+      })
+    },
+    [requireAuth],
+  )
 
-  const handleMoveMember = (memberId: string, targetPartyId: string | null) => {
-    requireAuth(async () => {
-      try {
-        await moveMemberToParty(memberId, targetPartyId)
-
-        toast({
-          title: "Success",
-          description: "Member moved successfully",
-        })
-      } catch (error) {
-        console.error("Error moving member:", error)
-        toast({
-          title: "Error",
-          description: "Failed to move member",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
-  const totalAssignedMembers = members.filter((member) => member.partyId !== null).length
+  const totalAssignedMembers = useMemo(() => members.filter((member) => member.partyId !== null).length, [members])
 
   if (isLoading) {
     return (
