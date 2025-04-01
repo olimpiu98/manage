@@ -122,14 +122,6 @@ export function Footer() {
             </a>
           </div>
         </div>
-
-        <div className="border-t border-[#e8deb3]/20 mt-8 pt-8 text-center">
-          <p className="text-sm opacity-70">&copy; {new Date().getFullYear()} Anatolion Guild. All rights reserved.</p>
-          <div className="mt-2 flex justify-center space-x-4 text-sm opacity-70">
-            <Link href="/privacy">Privacy Policy</Link>
-            <Link href="/terms">Terms of Service</Link>
-          </div>
-        </div>
       </div>
     </footer>
   )

@@ -91,7 +91,6 @@ export default function RootLayout({
                 <i className="fab fa-youtube platform-icon"></i>
               </div>
             </div>
-            <p className="mt-4 text-center">© {new Date().getFullYear()} Anatolion Guild. All rights reserved.</p>
           </footer>
         </div>
       </body>

@@ -182,14 +182,25 @@ export default function PartiesPage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
+      <div className="flex justify-between items-center">
+      <button
+          className={`flex items-center gap-2 px-4 py-2 bg-[#0a0a12]/50 hover:bg-[#0a0a12]/70 rounded`}
+        >
+          <span>{parties.length} Parties ({totalAssignedMembers} members)</span>
+        </button>
+        <AuthButton isAuthenticated={isAuthenticated} onAuthSuccess={handleAuthSuccess} />
+      </div>
+
       <div className="flex" style={{ minHeight: "calc(100vh - 300px)" }}>
-        <Sidebar
-          members={members}
-          onAddMember={handleAddMember}
-          onRemoveMember={handleRemoveMember}
-          isAuthenticated={isAuthenticated}
-          requireAuth={() => setIsAuthDialogOpen(true)}
-        />
+        {isAuthenticated &&
+          <Sidebar
+            members={members}
+            onAddMember={handleAddMember}
+            onRemoveMember={handleRemoveMember}
+            isAuthenticated={isAuthenticated}
+            requireAuth={() => setIsAuthDialogOpen(true)}
+          />
+        }
         <PartyGrid
           parties={parties}
           members={members}
@@ -202,10 +213,6 @@ export default function PartiesPage() {
           isAuthenticated={isAuthenticated}
           requireAuth={() => setIsAuthDialogOpen(true)}
         />
-      </div>
-
-      <div className="text-center mt-4">
-        <AuthButton isAuthenticated={isAuthenticated} onAuthSuccess={handleAuthSuccess} />
       </div>
 
       <AuthDialog
